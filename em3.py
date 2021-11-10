@@ -24,8 +24,6 @@ def E_step(data, theta, P):
     for i in range(len(data)):
         C_i = []
         for j in range(len(data[0])-P+1):   # 0 to 38-6+1
-            print(len(theta['lmbda']))
-            C_ij = theta['lmbda'][j]
             C_ij = np.log(theta['lmbda'][j])
             # Iterate through all positions of the motif
             for p in range(P):
@@ -69,8 +67,10 @@ def LLH(data, theta, C, P):
     dict = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
 
     # First term
-    first = C @ theta['lmbda'][0:len(data)-P+1].T
-    first = first.sum()  # sum across j's
+    first = 0
+    for i in range(len(data)):
+        for j in range(len(C)):
+            first += C[i][j] * np.log(theta['lmbda'][j])
 
     # Second term
     second = 0
@@ -100,9 +100,13 @@ def EM(data, motif_length, conv=0.001):
     return theta
 
 
+# test code
 data = get_data("small_seqs.txt")
 theta = init_EM(len(data[0]), 6)
 posteriors = E_step(data, theta, 6)
+theta = M_step(data, posteriors, 6)
+loglh = LLH(data, theta, posteriors, 6)
+#final_theta = EM(data, 6)
 
 
 """
