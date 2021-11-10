@@ -60,6 +60,8 @@ def M_step(data, C, P):
                 k = dict[base]
                 psi_1[k, p] += C[i][j]
                 psi_0[k, p] += 1 - (C[i][j])
+    psi_1 /= len(data)  # normalization
+    psi_0 /= len(data)*(len(data[0])-P)  # normalization
     theta = {'lmbda': lmbda, 'psi_1': psi_1, 'psi_0': psi_0}
     return theta
 
@@ -92,11 +94,10 @@ def EM(data, motif_length, conv=0.001):
     # Main loop
     while abs(LLH_prev - LLH_curr) > conv:
         LLH_prev = LLH_curr
-        print(LLH)
-        C = E_step(data, theta, motif_length)
+        posteriors = E_step(data, theta, motif_length)
         theta = M_step(data, motif_length, C)
         # Recalculate LLH with theta from the M step
-        LLH_curr = LLH(data, theta, C)
+        LLH_curr = LLH(data, theta, posteriors, 6)
     return theta
 
 
